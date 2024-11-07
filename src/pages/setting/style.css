@@ -1,0 +1,40 @@
+.list-tag {
+    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+
+    .item {
+        display: flex;
+
+        span.number {
+            background-color: #d4d1e4;
+            color: #666;
+            width: 30px;
+            text-align: center;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px 0 0 5px;
+        }
+    }
+
+    .add {
+        width: 64;
+        height: 22;
+        margin-inline-end: 8px;
+    }
+}
+
+.tool-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #392c56;
+    font-weight: bold;
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+}
