@@ -94,7 +94,16 @@ export const data = {
     93: "eth-210D",
 }
 
-export const list = Object.entries(data);
+export const list = Object.entries(data).map(it=>{
+    const [key, value] = it
+    return {
+        key,
+        title: value,
+        group: 'eth',
+        location: '-',
+        open: false,
+    }
+});
 
 
 export const listUp = list.filter((item) => item[0] < 54);

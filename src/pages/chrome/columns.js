@@ -1,7 +1,8 @@
-import {  MoreOutlined, AlignRightOutlined, EnvironmentOutlined } from '@ant-design/icons'
-import {Space, Button,} from 'antd'
+import { MoreOutlined, AlignRightOutlined, EnvironmentOutlined } from '@ant-design/icons'
+import { Space, Button, } from 'antd'
 
-export default function columns() {
+export default function columns(props = {}) {
+    const { onOpen, onClose } = props
     return [
         {
             title: '编号/名称',
@@ -46,14 +47,17 @@ export default function columns() {
         },
         {
             title: '操作',
-            width: 80,
+            width: 180,
             fixed: 'right',
             align: 'right',
-            render() {
+            render(record) {
+                if (record.open) {
+                    return (
+                        <Button type='primary' ghost danger onClick={() => onClose(record)}>关闭</Button>
+                    )
+                }
                 return (
-                    <Space>
-                        <Button type='primary'>打开</Button>
-                    </Space>
+                    <Button type='primary'  onClick={() => onOpen(record)}>打开</Button>
                 )
             }
         },

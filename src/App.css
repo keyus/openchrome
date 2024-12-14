@@ -12,6 +12,11 @@ body {
     box-sizing: inherit;
   }
 }
+[data-disabled]{
+  color: #999;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .flex-center{
   display: flex;
   align-items: center;

@@ -16,16 +16,16 @@ function App() {
               to='/'><GlobalOutlined />环境管理</NavLink>
           </li>
           <li>
-            <NavLink to='/group'><OneToOneOutlined />分组管理</NavLink>
+            <NavLink to='/group' data-disabled><OneToOneOutlined />分组管理</NavLink>
           </li>
         </ul>
         <div className='space-line'/>
         <ul>
           <li>
-            <NavLink to='/sync'><DesktopOutlined />窗口同步</NavLink>
+            <NavLink to='/sync' data-disabled><DesktopOutlined />窗口同步</NavLink>
           </li>
           <li>
-            <NavLink to='/app'><CloudServerOutlined />浏览器应用</NavLink>
+            <NavLink to='/app' data-disabled><CloudServerOutlined />浏览器应用</NavLink>
           </li>
         </ul>
       </aside>
