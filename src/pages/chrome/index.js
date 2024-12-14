@@ -1,156 +1,78 @@
 
-import { Tag, Form, Select, Divider, Popover, Badge } from 'antd'
-import { listUp, listDown } from '../../config';
-import { invoke } from '@tauri-apps/api/core'
-
-import {
-    CheckCircleOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    ExclamationCircleOutlined,
-    MinusCircleOutlined,
-    SyncOutlined,
-} from '@ant-design/icons';
+import { Input, Form, Select, Checkbox, Button, Space, Table } from 'antd'
+import { SearchOutlined, PlayCircleOutlined, CloseCircleOutlined, DeleteOutlined, ReloadOutlined, } from '@ant-design/icons'
 import './style.css';
-import { logger } from '@rsbuild/core';
-
-
-function group(list, lens = 7) {
-    let groupNum = 0;
-    let arr = [];
-    const data = Object.groupBy(list, (item) => {
-        const key = item.at(0);
-        if (arr.indexOf(key) === -1) {
-            arr.push(key);
-        }
-        if (arr.length === lens) {
-            groupNum++;
-            arr = [];
-        }
-        return groupNum;
-    });
-    return Object.entries(data);
-}
-
+import columns from './columns';
+import testData from './test'
 
 export default function Chrome() {
     const [form] = Form.useForm();
-    const groupNum = Form.useWatch('groupNum', form);
-    const listUpGroups = group(listUp, groupNum);
-    const listDownGroups = group(listDown, groupNum);
+
+    const column = columns();
+    const x = column.reduce((a, b) => { return a + b.width }, 0)
 
     return (
         <div>
-            <h1>Chrome 启动 <span>（每{groupNum}个为一组）</span></h1>
-            <Form
-                form={form}
-                initialValues={{
-                    groupNum: 7
-                }}
-            >
-                <Form.Item
-                    label='分组数量'
-                    name='groupNum'
+            <div>
+                <Form
+                    form={form}
+                    layout='inline'
+                    initialValues={{
+                        group: '',
+                    }}
                 >
-                    <Select
-                        style={{ width: 70 }}
-                        options={[
-                            { label: '4', value: 4 },
-                            { label: '5', value: 5 },
-                            { label: '6', value: 6 },
-                            { label: '7', value: 7 },
-                            { label: '8', value: 8 },
-                            { label: '9', value: 9 },
-                        ]}
-                    />
-                </Form.Item>
-            </Form>
-            <div className='chrome-group'>
-                <div className='item'>
-                    <h2>上方</h2>
-                    <ul className='ul-group'>
-                        {
-                            listUpGroups.map((item) => {
-                                const key = item.at(0);
-                                return (
-                                    <ItemData key={key} data={item} />
-                                )
-                            })
-                        }
-                    </ul>
+                    <Form.Item
+                        name='group'
+                    >
+                        <Select
+                            style={{ width: 150 }}
+                            size="large"
+                            options={[
+                                { label: '全部分组', value: '' },
+                                { label: '分组1', value: 5 },
+                            ]}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        name='search'
+                    >
+                        <Input size="large" placeholder="搜索名字" prefix={<SearchOutlined />} />
+                    </Form.Item>
+                    <Form.Item
+                        name='open'
+                        valuePropName='checked'
+                        className='flex-center'
+                    >
+                        <Checkbox size="large">已打开(0)</Checkbox>
+                    </Form.Item>
+                </Form>
+            </div>
+            <div className='tools'>
+                <div>
+                    <Space>
+                        <Button type='primary' icon={<PlayCircleOutlined />} size='large' autoInsertSpace={false}>打开</Button>
+                        <Button icon={<CloseCircleOutlined />} size='large' />
+                        <Button icon={<DeleteOutlined />} size='large' />
+                    </Space>
                 </div>
-
-                <Divider>58e0</Divider>
-
-                <div className='item'>
-                    <h2>下方</h2>
-                    <ul className='ul-group'>
-                        {
-                            listDownGroups.map((item) => {
-                                const key = item.at(0);
-                                return (
-                                    <ItemData key={key} data={item} />
-                                )
-                            })
-                        }
-                    </ul>
+                <div>
+                    <Space>
+                        <Button icon={<ReloadOutlined />} size='large' />
+                    </Space>
                 </div>
+            </div>
+            <div className='list-table'>
+                <Table
+                    scroll={{ y: 330, x }}
+                    rowSelection={{
+                        fixed: true,
+                    }}
+                    columns={column}
+                    dataSource={testData}
+                />
             </div>
         </div>
     )
 }
 
-function ItemData(props = {}) {
-    const { data } = props;
-    const num = data.at(0);
-    const list = data.at(1);
-    const title = `chrome 组${Number(num) + 1}`
-    const openChrome = async () => {
-        const sets = list.map((item) => item.at(1));
-        console.log('通知rust');
 
-        const res = await invoke('open_chrome', { path: 'kd' }).catch(e=>{});
-        console.log('res', res);
-    }
-
-    return (
-        <li >
-            <Popover
-                title={title}
-                trigger={['click']}
-                content={
-                    <div>
-                        {
-                            list.map((item) => {
-                                const [key, value] = item;
-                                return (
-                                    <p
-                                        key={key}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 10,
-                                        }}
-                                    >
-                                        <Badge
-                                            color="#faad14"
-                                            count={key} />
-                                        <span>{value}</span>
-                                    </p>
-                                )
-                            })
-                        }
-                    </div>
-                }>
-                <Tag
-                    // icon={<SyncOutlined spin />}
-                    bordered={false}
-                // color='processing'
-                >chrome{+num + 1}</Tag>
-            </Popover>
-            <Tag
-                onClick={openChrome}
-            >启动</Tag>
-        </li>
-    )
-}

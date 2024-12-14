@@ -1,13 +1,10 @@
 
 import { Form, Input, Button, Tag } from 'antd'
 import { ReactComponent as ChromeSvg } from '../../assets/chrome.svg'
-import { Store } from '@tauri-apps/plugin-store'
+// import { Store } from '@tauri-apps/plugin-store'
 import { list } from '../../config'
 import './style.css'
 
-const store = await Store.load('settings.json');
-const state = await store.get('desktopChrome');
-console.log('store:',state);
 
 export default function Setting() {
     const [form] = Form.useForm();

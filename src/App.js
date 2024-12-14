@@ -1,8 +1,7 @@
-import { NavLink, Link, Outlet } from 'react-router-dom'
+import { NavLink,  Outlet } from 'react-router-dom'
+import { Avatar } from 'antd'
+import { GlobalOutlined, OneToOneOutlined, DesktopOutlined, CloudServerOutlined  } from '@ant-design/icons'
 import { ReactComponent as LogoSvg } from './assets/logo.svg'
-import { ReactComponent as SettingSvg } from './assets/setting.svg'
-import { ReactComponent as ChromeSvg } from './assets/chrome.svg'
-import { ReactComponent as TelegramSvg } from './assets/telegram.svg'
 import "./App.css";
 
 function App() {
@@ -10,22 +9,30 @@ function App() {
   return (
     <>
       <aside className="side">
-        <h1><LogoSvg />启动</h1>
+        <h1><LogoSvg />InWen</h1>
         <ul>
           <li>
             <NavLink
-              to='/'><ChromeSvg/>chrome</NavLink>
+              to='/'><GlobalOutlined />环境管理</NavLink>
           </li>
-          {/* <li>
-            <NavLink
-              to='/telegram'><TelegramSvg/>telegram</NavLink>
-          </li> */}
+          <li>
+            <NavLink to='/group'><OneToOneOutlined />分组管理</NavLink>
+          </li>
+        </ul>
+        <div className='space-line'/>
+        <ul>
+          <li>
+            <NavLink to='/sync'><DesktopOutlined />窗口同步</NavLink>
+          </li>
+          <li>
+            <NavLink to='/app'><CloudServerOutlined />浏览器应用</NavLink>
+          </li>
         </ul>
       </aside>
       <div className="main">
         <header className='main-header'>
-          <div/>
-          <div className='set'><Link to='/setting'><SettingSvg/></Link></div>
+          <h2>环境管理</h2>
+          <div className='set'><Avatar size={40}>USER</Avatar></div>
         </header>
         <div className='main-body'>
           <Outlet />

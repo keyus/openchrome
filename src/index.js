@@ -9,7 +9,19 @@ import Setting from './pages/setting'
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-    <ConfigProvider>
+    <ConfigProvider
+        theme={{
+            components: {
+                Table: {
+                    headerBg: '#fff',
+                    headerColor: '#bcbec5',
+                    cellFontSize: '13px',
+                    footerBg: '#fff',
+                    rowHoverBg: '#e9edfd',
+                }
+            }
+        }}
+    >
         <RouterProvider
             router={createHashRouter([
                 {
@@ -19,14 +31,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                         {
                             index: true,
                             element: <Chrome />
-                        },
-                        // {
-                        //     path: 'telegram',
-                        //     element: <Telegram />
-                        // },
-                        {
-                            path: 'setting',
-                            element: <Setting />
                         },
                     ]
                 },
