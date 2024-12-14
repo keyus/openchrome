@@ -1,6 +1,6 @@
 
 
-const data = {
+export const data = {
     3: "eth-C871",
     4: "eth-bCb9",
     5: "eth-14AD",
