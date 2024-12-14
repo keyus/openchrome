@@ -1,6 +1,5 @@
 use dirs::desktop_dir;
 use std::path::PathBuf;
-use localdb::db::create_db;
 
 #[tauri::command]
 fn open_chrome(path: String) -> PathBuf {
