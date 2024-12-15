@@ -2,6 +2,7 @@ use once_cell::sync::Lazy;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::process::Command;
+use std::os::windows::process::CommandExt;
 use std::sync::Mutex;
 use sysinfo::{ProcessExt, System, SystemExt, Pid};
 
@@ -64,6 +65,7 @@ pub fn close_chrome(names: Vec<String>) -> Result<ChromeResult, String> {
 pub fn close_all_chrome() -> Result<ChromeResult, String> {
     println!("close_all_chrome");
     Command::new("taskkill")
+        .creation_flags(0x08000000)
         .arg("/F")
         .arg("/IM")
         .arg("chrome.exe")
