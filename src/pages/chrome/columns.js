@@ -9,6 +9,14 @@ export default function columns(props = {}) {
             dataIndex: 'title',
             width: 100,
             fixed: 'left',
+            render(val, record) {
+                const isTag = val.toLowerCase().includes('58e0')
+                return (
+                    <span className={isTag ? 'tag-58e0' : ''}>
+                        {val}
+                    </span>
+                )
+            }
         },
         {
             title: '分组',
@@ -39,12 +47,20 @@ export default function columns(props = {}) {
             title: '备注',
             dataIndex: 'mark',
             width: 140,
+            render(val, record) {
+                const isTag = record.title.toLowerCase().includes('58e0');
+                if(isTag){
+                    return (
+                        <span className='tag-58e0'>跳过</span>
+                    )
+                }
+
+                return (
+                    <span className='mark'>{val}</span>
+                )
+            }
         },
-        {
-            title: '创建时间',
-            dataIndex: 'createTime',
-            width: 140,
-        },
+        
         {
             title: '操作',
             width: 180,
@@ -53,11 +69,11 @@ export default function columns(props = {}) {
             render(record) {
                 if (record.open) {
                     return (
-                        <Button type='primary' ghost danger onClick={() => onClose(record)}>关闭</Button>
+                        <Button type='primary' ghost danger onClick={() => onClose([record])}>关闭</Button>
                     )
                 }
                 return (
-                    <Button type='primary'  onClick={() => onOpen(record)}>打开</Button>
+                    <Button type='primary'  onClick={() => onOpen([record])}>打开</Button>
                 )
             }
         },

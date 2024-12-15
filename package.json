@@ -1,12 +1,13 @@
 {
-  "name": "test-rs",
+  "name": "inwen",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "rsbuild dev",
     "build": "rsbuild build",
-    "tauri": "tauri dev"
+    "tauri": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.2",

@@ -9,7 +9,8 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             open::open_chrome, 
-            open::close_chrome
+            open::close_chrome,
+            open::close_all_chrome,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

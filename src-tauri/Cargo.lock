@@ -1630,6 +1630,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "inwen"
+version = "0.1.0"
+dependencies = [
+ "dirs 4.0.0",
+ "once_cell",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-shell",
+ "tauri-plugin-sql",
+ "tauri-plugin-store",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4106,23 +4123,6 @@ dependencies = [
  "futf",
  "mac",
  "utf-8",
-]
-
-[[package]]
-name = "test-rs"
-version = "0.1.0"
-dependencies = [
- "dirs 4.0.0",
- "once_cell",
- "rusqlite",
- "serde",
- "serde_json",
- "sysinfo",
- "tauri",
- "tauri-build",
- "tauri-plugin-shell",
- "tauri-plugin-sql",
- "tauri-plugin-store",
 ]
 
 [[package]]

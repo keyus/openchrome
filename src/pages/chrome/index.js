@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Input, Form, Select, Checkbox, Button, Space, Table, message } from 'antd'
 import { useMount, useUpdateEffect } from 'ahooks'
-import { SearchOutlined, PlayCircleOutlined, CloseCircleOutlined, DeleteOutlined, ReloadOutlined, } from '@ant-design/icons'
+import { SearchOutlined, PlayCircleOutlined, CloseCircleOutlined, PoweroffOutlined, ReloadOutlined, } from '@ant-design/icons'
 import './style.css';
 import columns from './columns';
 import { list } from '../../config'
@@ -13,9 +13,11 @@ export default function Chrome() {
     const [form] = Form.useForm();
     const open = Form.useWatch('open', form);
     const [data, setData] = useState(list)
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [selectedRows, setSelectedRows] = useState([]);
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: 10,
+        pageSize: 7,
         total: list.length,
     })
 
@@ -27,7 +29,7 @@ export default function Chrome() {
         }
     }, [open])
 
-    useMount(()=>{
+    useMount(() => {
         listen('chrome-closed', (e) => {
             console.log('chrome-closed', e)
             setData(data.map(it => {
@@ -52,11 +54,12 @@ export default function Chrome() {
         return setData(list)
     }
 
-    const onOpen = async (item) => {
-        const res = await invoke('open_chrome', { name: item.title })
+    const onOpen = async (items) => {
+        const names = items.map(it => it.title);
+        const res = await invoke('open_chrome', { names })
         if (res.success) {
             setData(data.map(it => {
-                if (it.title === item.title) {
+                if (names.includes(it.title)) {
                     return { ...it, open: true }
                 }
                 return it
@@ -66,13 +69,20 @@ export default function Chrome() {
         }
         console.log(res)
     }
-    const onClose = async (item) => {
-        invoke('close_chrome', { name: item.title })
+    const onClose = async (items) => {
+        const names = items.map(it => it.title);
+        invoke('close_chrome', { names })
         setData(data.map(it => {
-            if (it.title === item.title) {
+            if (names.includes(it.title)) {
                 return { ...it, open: false }
             }
             return it
+        }))
+    }
+    const onCloseAll = () => {
+        invoke('close_all_chrome');
+        setData(data.map(it => {
+            return { ...it, open: false }
         }))
     }
     const column = columns({ onOpen, onClose });
@@ -118,9 +128,34 @@ export default function Chrome() {
             <div className='tools'>
                 <div>
                     <Space>
-                        <Button type='primary' icon={<PlayCircleOutlined />} size='large' autoInsertSpace={false}>打开</Button>
-                        <Button icon={<CloseCircleOutlined />} size='large' />
-                        <Button icon={<DeleteOutlined />} disabled size='large' />
+                        <Button
+                            type='primary'
+                            icon={<PlayCircleOutlined />}
+                            size='large'
+                            autoInsertSpace={false}
+                            onClick={() => {
+                                onOpen(selectedRows);
+                                setSelectedRowKeys([]);
+                                setSelectedRows([]);
+                            }}
+                            disabled={selectedRowKeys.length === 0}
+                        >打开</Button>
+                        <Button
+                            icon={<CloseCircleOutlined />}
+                            onClick={() => {
+                                onClose(selectedRows);
+                                setSelectedRowKeys([]);
+                                setSelectedRows([]);
+                            }}
+                            disabled={selectedRowKeys.length === 0}
+                            size='large' />
+                        <Button
+                            icon={<PoweroffOutlined />}
+                            size='large'
+                            onClick={onCloseAll}
+                        >
+                            一键关闭
+                        </Button>
                     </Space>
                 </div>
                 <div>
@@ -134,14 +169,20 @@ export default function Chrome() {
                     scroll={{ y: 480, x }}
                     rowSelection={{
                         fixed: true,
+                        selectedRowKeys,
+                        onChange: (selectedRowKeys, selectedRows) => {
+                            setSelectedRowKeys(selectedRowKeys)
+                            setSelectedRows(selectedRows)
+                        }
                     }}
+                    locale={{ emptyText: '暂无数据' }}
                     rowKey='title'
                     columns={column}
                     pagination={{
                         current: pagination.current,
                         pageSize: pagination.pageSize,
                         showSizeChanger: true,
-                        pageSizeOptions: [10, 20, 50, 100],
+                        pageSizeOptions: [5, 7, 10],
                         total: pagination.total,
                     }}
                     onChange={onChange}
