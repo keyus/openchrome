@@ -4,8 +4,9 @@ import App from "./App";
 import { ConfigProvider } from 'antd'
 import { createHashRouter, RouterProvider, } from 'react-router-dom'
 import Chrome from './pages/chrome'
-import Telegram from './pages/telegram'
-import Setting from './pages/setting'
+import ChromeApp from './pages/chrome_app'
+// import Telegram from './pages/telegram'
+// import Setting from './pages/setting'
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -30,7 +31,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                     children: [
                         {
                             index: true,
-                            element: <Chrome />
+                            element: <Chrome />,
+                            handle: {
+                                title: '环境管理'
+                            }
+                        },
+                        {
+                            path: 'chrome_app',
+                            element: <ChromeApp />,
+                            handle: {
+                                title: '浏览器应用'
+                            }
                         },
                     ]
                 },

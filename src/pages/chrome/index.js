@@ -7,7 +7,7 @@ import './style.css';
 import columns from './columns';
 import { list } from '../../config'
 import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event'
+import { listen, unlisten } from '@tauri-apps/api/event'
 
 export default function Chrome() {
     const [form] = Form.useForm();
@@ -21,6 +21,8 @@ export default function Chrome() {
         total: list.length,
     })
 
+    console.log('render:',data)
+
     useUpdateEffect(() => {
         if (open) {
             setData(data.filter(it => it.open))
@@ -30,15 +32,23 @@ export default function Chrome() {
     }, [open])
 
     useMount(() => {
+        let unlisten = null;
         listen('chrome-closed', (e) => {
             console.log('chrome-closed', e)
-            setData(data.map(it => {
-                if (it.title === e.payload) {
-                    return { ...it, open: false }
-                }
-                return it
-            }))
+            setData((prev)=>{
+                return prev.map(it=>{
+                    if(e.payload.length >0 && e.payload.includes(it.title)){
+                        return { ...it, open: false }
+                    }
+                    return it
+                });
+            })
+        }).then(unlisten=>{
+            unlisten = unlisten;
         })
+        return () => {
+            unlisten?.();
+        };
     })
 
     const onChange = (pagination, filters, sorter, extra) => {
@@ -58,12 +68,14 @@ export default function Chrome() {
         const names = items.map(it => it.title);
         const res = await invoke('open_chrome', { names })
         if (res.success) {
-            setData(data.map(it => {
-                if (names.includes(it.title)) {
-                    return { ...it, open: true }
-                }
-                return it
-            }))
+            setData((data)=>{
+                return data.map(it=>{
+                    if(names.includes(it.title)){
+                        return { ...it, open: true }
+                    }
+                    return it
+                })
+            })
         } else {
             message.error("打开失败")
         }
@@ -72,18 +84,22 @@ export default function Chrome() {
     const onClose = async (items) => {
         const names = items.map(it => it.title);
         invoke('close_chrome', { names })
-        setData(data.map(it => {
-            if (names.includes(it.title)) {
-                return { ...it, open: false }
-            }
-            return it
-        }))
+        setData((data)=>{
+            return data.map(it=>{
+                if(names.includes(it.title)){
+                    return { ...it, open: false }
+                }
+                return it
+            })
+        })
     }
     const onCloseAll = () => {
         invoke('close_all_chrome');
-        setData(data.map(it => {
-            return { ...it, open: false }
-        }))
+        setData((data)=>{
+            return data.map(it=>{
+                return { ...it, open: false }
+            })
+        })
     }
     const column = columns({ onOpen, onClose });
     const x = column.reduce((a, b) => { return a + b.width }, 0)

@@ -1,5 +1,6 @@
-
+use std::thread;
 mod open;
+mod chrome_app;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -11,7 +12,22 @@ pub fn run() {
             open::open_chrome, 
             open::close_chrome,
             open::close_all_chrome,
+            
+            chrome_app::install_chrome_extension,
+            chrome_app::uninstall_chrome_extension,
         ])
+        .setup(|app|{
+            // 启动监听线程
+            let app_handle = app.handle().clone();
+            thread::spawn(move || {
+                if let Err(e) = open::monitor_chrome_processes(app_handle){
+                    eprintln!("Error monitoring Chrome processes: {}", e);
+                }
+            });
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    
 }

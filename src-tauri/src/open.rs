@@ -3,8 +3,13 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::process::Command;
 use std::os::windows::process::CommandExt;
+use std::{
+    thread,
+    error::Error,
+};
 use std::sync::Mutex;
 use sysinfo::{ProcessExt, System, SystemExt, Pid};
+use tauri::Emitter;
 
 static CHROME_PROCESSES: Lazy<Mutex<HashMap<String, u32>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
@@ -88,4 +93,45 @@ fn kill_process_by_pid(pid: u32) -> Result<(), String> {
         process.kill();
     }
     Ok(())
+}
+
+
+pub fn monitor_chrome_processes(app_handle: tauri::AppHandle)-> Result<(), Box<dyn Error>> {
+    let mut sys = System::new_all();
+    
+    loop {
+        sys.refresh_processes();
+        
+        let mut closed_names = Vec::new();
+        {
+            let mut processes = CHROME_PROCESSES.lock().unwrap();
+            
+            // 检查每个已记录的 Chrome 进程
+            processes.retain(|name, &mut pid| {
+                let is_running = sys.process(Pid::from(pid as usize)).is_some();
+                if !is_running {
+                    closed_names.push(name.clone());
+                }
+                is_running
+            });
+        }
+
+        // 如果有进程关闭，通知前端并更新记录
+        if !closed_names.is_empty() {
+        println!("closed_names: {:?}", closed_names);
+            {
+                for name in &closed_names {
+                    CHROME_PROCESSES
+                    .lock()
+                    .map_err(|e| e.to_string())?
+                    .remove(&name.clone());
+                }
+            }
+            // 发送事件到前端
+            app_handle.emit("chrome-closed", closed_names).unwrap();
+        }
+
+        // 休眠一段时间再检查
+        thread::sleep(std::time::Duration::from_secs(3));
+    }
 }
