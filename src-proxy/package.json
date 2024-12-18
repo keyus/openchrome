@@ -1,0 +1,27 @@
+{
+  "name": "proxy",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "rsbuild dev --open",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview"
+  },
+  "dependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "antd": "^5.22.5",
+    "ahooks": "3.8.4",
+    "@ant-design/icons": "^5.5.2",
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.1.8",
+    "@rsbuild/plugin-react": "^1.0.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@rsbuild/plugin-svgr": "^1.0.6",
+    "@types/chrome": "^0.0.287",
+    "typescript": "^5.7.2"
+  }
+}
