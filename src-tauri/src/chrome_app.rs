@@ -1,7 +1,6 @@
 use winreg::enums::*;
 use winreg::RegKey;
 
-
 #[tauri::command]
 pub fn install_chrome_extension(extension_id: &str) -> Result<(), String> {
     // 检查系统架构并选择正确的注册表路径
@@ -15,7 +14,10 @@ pub fn install_chrome_extension(extension_id: &str) -> Result<(), String> {
     println!("extension_id: {}", extension_id);
     // 创建或打开 Extensions 键
     let (extensions_key, _) = hklm.create_subkey(extensions_path)
-        .map_err(|e| format!("Failed to create Extensions key: {}", e))?;
+        .map_err(|e| {
+            println!("faild {:?}", e);
+            format!("Failed to create Extensions key: {}", e)
+        })?;
 
     println!("extensions_key: {:?}", extensions_key);
     // 为扩展创建子键

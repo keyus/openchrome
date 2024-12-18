@@ -6,8 +6,9 @@ import { SearchOutlined, PlayCircleOutlined, CloseCircleOutlined, PoweroffOutlin
 import './style.css';
 import columns from './columns';
 import { list } from '../../config'
+// import { db_chrome } from '../../db/chrome'
 import { invoke } from '@tauri-apps/api/core';
-import { listen, unlisten } from '@tauri-apps/api/event'
+import { listen,  } from '@tauri-apps/api/event'
 
 export default function Chrome() {
     const [form] = Form.useForm();
@@ -20,8 +21,6 @@ export default function Chrome() {
         pageSize: 7,
         total: list.length,
     })
-
-    console.log('render:',data)
 
     useUpdateEffect(() => {
         if (open) {
@@ -55,7 +54,6 @@ export default function Chrome() {
         setPagination(pagination)
     }
     const onFinish = (values) => {
-        console.log(values)
         if (values.search) {
             return setData(list.filter(it => {
                 return it.title.toLowerCase().includes(values.search.toLowerCase())
@@ -66,7 +64,10 @@ export default function Chrome() {
 
     const onOpen = async (items) => {
         const names = items.map(it => it.title);
-        const res = await invoke('open_chrome', { names })
+        const res = await invoke('open_chrome', { names });
+
+        // db_chrome()
+
         if (res.success) {
             setData((data)=>{
                 return data.map(it=>{
