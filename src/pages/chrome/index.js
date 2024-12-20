@@ -1,48 +1,67 @@
 
 import { useState } from 'react'
+import { useLoaderData } from 'react-router-dom'
 import { Input, Form, Select, Checkbox, Button, Space, Table, message } from 'antd'
 import { useMount, useUpdateEffect } from 'ahooks'
 import { SearchOutlined, PlayCircleOutlined, CloseCircleOutlined, PoweroffOutlined, ReloadOutlined, } from '@ant-design/icons'
-import './style.css';
-import columns from './columns';
-import { list } from '../../config'
-// import { db_chrome } from '../../db/chrome'
 import { invoke } from '@tauri-apps/api/core';
-import { listen,  } from '@tauri-apps/api/event'
+import { listen, } from '@tauri-apps/api/event'
+import columns from './columns';
+import db from '../../db/chrome'
+import './style.css';
 
-export default function Chrome() {
+
+export async function clientLoader() {
+    return db.getAll();
+}
+
+export default function Chrome(props = {}) {
+    const dataOrg = useLoaderData();
     const [form] = Form.useForm();
     const open = Form.useWatch('open', form);
-    const [data, setData] = useState(list)
+    const search = Form.useWatch('search', form);
+    const [data, setData] = useState(dataOrg)
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [selectedRows, setSelectedRows] = useState([]);
     const [pagination, setPagination] = useState({
         current: 1,
         pageSize: 7,
-        total: list.length,
+        total: dataOrg.length,
     })
 
     useUpdateEffect(() => {
         if (open) {
-            setData(data.filter(it => it.open))
+            setData(data=>{
+                return data.filter(it => it.open)
+            })
         } else {
-            setData(list)
+            setData(dataOrg)
         }
-    }, [open])
+    }, [open]);
+
+    useUpdateEffect(() => {
+        if (search) {
+            return setData(dataOrg.filter(it => {
+                return it.name.toLowerCase().includes(search.toLowerCase())
+            }))
+        } else {
+            setData(dataOrg)
+        }
+    }, [search])
 
     useMount(() => {
         let unlisten = null;
         listen('chrome-closed', (e) => {
             console.log('chrome-closed', e)
-            setData((prev)=>{
-                return prev.map(it=>{
-                    if(e.payload.length >0 && e.payload.includes(it.title)){
+            setData((prev) => {
+                return prev.map(it => {
+                    if (e.payload.length > 0 && e.payload.includes(it.name)) {
                         return { ...it, open: false }
                     }
                     return it
                 });
             })
-        }).then(unlisten=>{
+        }).then(unlisten => {
             unlisten = unlisten;
         })
         return () => {
@@ -53,26 +72,21 @@ export default function Chrome() {
     const onChange = (pagination, filters, sorter, extra) => {
         setPagination(pagination)
     }
-    const onFinish = (values) => {
-        if (values.search) {
-            return setData(list.filter(it => {
-                return it.title.toLowerCase().includes(values.search.toLowerCase())
-            }))
-        }
-        return setData(list)
-    }
 
     const onOpen = async (items) => {
-        const names = items.map(it => it.title);
+        const names = items.map(it => it.name);
         const res = await invoke('open_chrome', { names });
 
-        // db_chrome()
-
+        const last_open_time = Date.now();
         if (res.success) {
-            setData((data)=>{
-                return data.map(it=>{
-                    if(names.includes(it.title)){
-                        return { ...it, open: true }
+            db.update_last_open_time(items.map(it => ({
+                name: it.name,
+                last_open_time,
+            })));
+            setData((data) => {
+                return data.map(it => {
+                    if (names.includes(it.name)) {
+                        return { ...it, open: true, last_open_time, }
                     }
                     return it
                 })
@@ -80,14 +94,13 @@ export default function Chrome() {
         } else {
             message.error("打开失败")
         }
-        console.log(res)
     }
     const onClose = async (items) => {
-        const names = items.map(it => it.title);
+        const names = items.map(it => it.name);
         invoke('close_chrome', { names })
-        setData((data)=>{
-            return data.map(it=>{
-                if(names.includes(it.title)){
+        setData((data) => {
+            return data.map(it => {
+                if (names.includes(it.name)) {
                     return { ...it, open: false }
                 }
                 return it
@@ -96,8 +109,8 @@ export default function Chrome() {
     }
     const onCloseAll = () => {
         invoke('close_all_chrome');
-        setData((data)=>{
-            return data.map(it=>{
+        setData((data) => {
+            return data.map(it => {
                 return { ...it, open: false }
             })
         })
@@ -114,7 +127,6 @@ export default function Chrome() {
                     initialValues={{
                         group: '',
                     }}
-                    onFinish={onFinish}
                 >
                     <Form.Item
                         name='group'
@@ -193,7 +205,7 @@ export default function Chrome() {
                         }
                     }}
                     locale={{ emptyText: '暂无数据' }}
-                    rowKey='title'
+                    rowKey='id'
                     columns={column}
                     pagination={{
                         current: pagination.current,

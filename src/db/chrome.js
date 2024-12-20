@@ -1,28 +1,31 @@
 import Database from '@tauri-apps/plugin-sql';
 
-export async function db_chrome() {
-    const db = await Database.load('sqlite:inwen.db');
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS chrome (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name VARCHAR(50) NOT NULL,
-            group_name VARCHAR(50),
-            localtion VARCHAR(50),
-            tags VARCHAR(200),
-            open BOOLEAN DEFAULT FALSE,
-            mark VARCHAR(200),
-            last_open_time TIMESTAMP,
-            create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-    await db.execute(`
-        CREATE INDEX IF NOT EXISTS idx_chrome_name ON chrome(name)
-    `);
+export default {
+    async connect() {
+        return await Database.load('sqlite:inwen.db')
+    },
 
-    const result = await db.execute('SELECT COUNT(*) as count FROM chrome');
-    console.log('result',result)
-    if (result.rows[0].count === 0) {
-        // Insert initial data
+    async create() {
+        const db = await this.connect();
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS chrome (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(50) NOT NULL,
+                group_name VARCHAR(50),
+                localtion VARCHAR(50),
+                tags VARCHAR(200),
+                open BOOLEAN DEFAULT FALSE,
+                mark VARCHAR(200),
+                last_open_time TIMESTAMP,
+                create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+    },
+    async initInsert() {
+        const db = await this.connect();
+        const result = await db.select(`select count(id) as count from chrome`);
+        const count = result.at(0).count;
+        if (count !== 0) return db.close();
         await db.execute(`
             INSERT INTO chrome (name, group_name, localtion, tags, mark) VALUES
             ('eth-C871', '', '', '', ''),
@@ -117,9 +120,31 @@ export async function db_chrome() {
             ('eth-441A', '', '', '', ''),
             ('eth-210D', '', '', '', '');
     `);
-    }
+    },
+    async getAll() {
+        const db = await this.connect();
+        return db.select('select id, name, group_name, localtion, tags, mark, last_open_time from chrome');
+    },
+    async update_last_open_time(values) {
+        const db = await this.connect();
+        console.log('va', values)
+        if (Array.isArray(values)) {
+            if (values.length === 0) return;
 
-    const rs = await db.execute('select * from chrome');
-    console.log(rs)
+            values.forEach((it) => {
+                const { last_open_time, name } = it;
+                console.log('update value', last_open_time, name)
+                db.execute(`update chrome set last_open_time = $1 where name = $2 `, [
+                    last_open_time, name
+                ]).then(result=>{
+                    console.log('result', result)
+                })
+            })
+            return
+        }
+        const { last_open_time, name } = values;
+        return db.execute(`update chrome set last_open_time = ? where name = ? `, [
+            last_open_time, name
+        ])
+    },
 }
-

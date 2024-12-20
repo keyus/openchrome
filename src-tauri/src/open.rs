@@ -33,7 +33,7 @@ pub fn open_chrome(names: Vec<String>) -> Result<ChromeResult, String> {
             //加载扩展
             // .arg("--load-extension=D:\\tools\\openchrome\\proxy\\")
             //指定代理服务器
-            .arg("--proxy-server=http://198.23.239.134:6540")
+            // .arg("--proxy-server=http://198.23.239.134:6540")
             // 启动url
             // .arg("http://your-startup-url.com?param1=value1&param2=value2") 
             .spawn()
