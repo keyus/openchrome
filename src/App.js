@@ -12,7 +12,7 @@ function App() {
   return (
     <>
       <aside className="side">
-        <h1><LogoSvg />InWen</h1>
+        <h1><LogoSvg />Airdrop</h1>
         <ul>
           <li>
             <NavLink

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Inwen",
+  "productName": "Airdrop",
   "version": "0.1.4",
-  "identifier": "com.inwen.app",
+  "identifier": "com.airdrop.app",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
