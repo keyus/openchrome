@@ -1,6 +1,7 @@
 use std::thread;
 mod open;
 mod chrome_app;
+mod db;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -17,6 +18,9 @@ pub fn run() {
             chrome_app::uninstall_chrome_extension,
         ])
         .setup(|app|{
+            
+            db::init_db(app.handle().clone());
+            
             // 启动监听线程
             let app_handle = app.handle().clone();
             thread::spawn(move || {

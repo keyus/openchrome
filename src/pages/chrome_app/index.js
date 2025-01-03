@@ -1,26 +1,36 @@
 
 import { useState } from 'react'
-import { Avatar, Input, Form, Button,  Card, message, Row,Col } from 'antd'
+import { Avatar, Input, Form, Button, Card, message, Row, Col, Tooltip } from 'antd'
 import { SearchOutlined, } from '@ant-design/icons'
 import './style.css';
 import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event'
+import { open } from '@tauri-apps/plugin-shell';
 import app from './app'
+import { useUpdateEffect } from 'ahooks';
 
 const { Meta } = Card;
 
 export default function Chrome() {
     const [form] = Form.useForm();
+    const search = Form.useWatch('search', form);
     const [data, setData] = useState(app);
 
     const installApp = async (id) => {
-        const res = await invoke('install_chrome_extension', { extensionId:id });
-        console.log(res);
+        try {
+            await invoke('install_chrome_extension', { extensionId: id });
+            message.success("安装成功");
+        } catch (e) {
+            message.error(e);
+        }
     }
 
     const uninstallApp = async (id) => {
-        const res = await invoke('uninstall_chrome_extension', { extensionId: id });
-        console.log(res);
+        try {
+            await invoke('uninstall_chrome_extension', { extensionId: id });
+            message.success("卸载成功");
+        } catch (e) {
+            message.error(e);
+        }
     }
 
     const handleSearch = (value) => {
@@ -29,6 +39,18 @@ export default function Chrome() {
         } else {
             setData(app);
         }
+    }
+
+    useUpdateEffect(()=>{
+        if (search) {
+            setData(app.filter(item => item.name.toLowerCase().includes(search.toLowerCase())));
+        } else {
+            setData(app);
+        }
+    },[search])
+
+    const openUrl = (url) => () => {
+        open(url);
     }
 
     return (
@@ -54,11 +76,11 @@ export default function Chrome() {
                                 <Card
                                     actions={[
                                         <Button danger onClick={() => uninstallApp(item.id)}>卸载</Button>,
-                                        <Button type='primary' onClick={() => installApp(item.id)}>安装</Button>,
+                                        <Button type='primary' onClick={() => installApp(item.id)}>全局安装</Button>,
                                     ]}
                                 >
                                     <Meta
-                                        avatar={<Avatar src={item.icons} />}
+                                        avatar={<Tooltip title='去chrome商店下载'><a onClick={openUrl(item.url)}><Avatar src={item.icons} /></a></Tooltip>}
                                         title={item.name}
                                         description={item.description}
                                     />
@@ -67,7 +89,6 @@ export default function Chrome() {
                         ))
                     }
                 </Row>
-
             </div>
         </div>
     )

@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useState, version } from 'react'
 import { useLoaderData } from 'react-router-dom'
 import { Input, Form, Select, Checkbox, Button, Space, Table, message } from 'antd'
 import { useMount, useUpdateEffect } from 'ahooks'
@@ -74,7 +74,7 @@ export default function Chrome(props = {}) {
     }
 
     const onOpen = async (items) => {
-        const names = items.map(it => it.name);
+        const names = items.map(it => ({ name: it.name, version: it.version }));
         const res = await invoke('open_chrome', { names });
 
         const last_open_time = Date.now();
@@ -195,7 +195,7 @@ export default function Chrome(props = {}) {
             </div>
             <div className='list-table'>
                 <Table
-                    scroll={{ y: 480, x }}
+                    scroll={{ y: 600, x }}
                     rowSelection={{
                         fixed: true,
                         selectedRowKeys,

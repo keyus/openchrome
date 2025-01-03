@@ -1,33 +1,57 @@
-import Database from '@tauri-apps/plugin-sql';
+use rusqlite::{params, Connection, Result};
+use tauri::{Manager};
+use std::error::Error;
 
-export default {
-    async connect() {
-        return await Database.load('sqlite:inwen.db')
-    },
+pub fn init_db(app_handle: tauri::AppHandle){
+    println!("Creating db");
 
-    async create() {
-        const db = await this.connect();
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS chrome (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(50) NOT NULL,
-                group_name VARCHAR(50),
-                localtion VARCHAR(50),
-                tags VARCHAR(200),
-                open BOOLEAN DEFAULT FALSE,
-                mark VARCHAR(200),
-                last_open_time TIMESTAMP,
-                create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-    },
-    async initInsert() {
-        const db = await this.connect();
-        const result = await db.select(`select count(id) as count from chrome`);
-        const count = result.at(0).count;
-        if (count !== 0) return db.close();
-        await db.execute(`
-            INSERT INTO chrome (name, group_name, localtion, tags, mark) VALUES
+    let path_resolver = app_handle.path();
+    let data_path = path_resolver.app_local_data_dir().unwrap().join("chrome.db");
+
+    print!("data_path: {:?}", data_path);
+    match Connection::open(data_path){
+        Ok(connection)=> {
+            if let Err(err) = create_chrome(&connection){
+                println!("无法创建chrome表: {}", err);
+            }
+        }
+        Err(err)=>{
+            println!("无法打开数据库连接: {}", err);
+        }
+    }
+}
+
+fn create_chrome(conn: &Connection)->Result<(), Box<dyn Error>>{
+    let sql = "
+        CREATE TABLE IF NOT EXISTS chrome (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(50) NOT NULL,
+            group_name VARCHAR(50),
+            localtion VARCHAR(50),
+            tags VARCHAR(200),
+            open BOOLEAN DEFAULT FALSE,
+            mark VARCHAR(200),
+            last_open_time TIMESTAMP,
+            create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ";
+    match conn.execute(sql, params![]) {
+        Ok(rows)=>{
+            println!("chrome表创建成功! , {}", rows);
+            if let Err(err) = initialize_database(conn){
+                println!("初始化数据失败: {}", err);
+            }
+        }
+        Err(err)=>{
+            println!("chrome表创建失败! , {}", err);
+        }
+    }
+    Ok(())
+}
+
+fn initialize_database(conn: &Connection)->Result<(), Box<dyn Error>>{
+    let insert_sql = "
+        INSERT INTO chrome (name, group_name, localtion, tags, mark) VALUES
             ('eth-C871', '', '', '', ''),
             ('eth-bCb9', '', '', '', ''),
             ('eth-14AD', '', '', '', ''),
@@ -119,32 +143,14 @@ export default {
             ('eth-c3B5', '', '', '', ''),
             ('eth-441A', '', '', '', ''),
             ('eth-210D', '', '', '', '');
-    `);
-    },
-    async getAll() {
-        const db = await this.connect();
-        return db.select('select id, name, group_name, localtion, tags, mark, last_open_time from chrome');
-    },
-    async update_last_open_time(values) {
-        const db = await this.connect();
-        console.log('va', values)
-        if (Array.isArray(values)) {
-            if (values.length === 0) return;
-
-            values.forEach((it) => {
-                const { last_open_time, name } = it;
-                console.log('update value', last_open_time, name)
-                db.execute(`update chrome set last_open_time = $1 where name = $2 `, [
-                    last_open_time, name
-                ]).then(result=>{
-                    console.log('result', result)
-                })
-            })
-            return
+    ";
+    match conn.execute(insert_sql, params![]) {
+        Ok(rows)=>{
+            println!("初始数据：chrome 写入成功, {}", rows)
         }
-        const { last_open_time, name } = values;
-        return db.execute(`update chrome set last_open_time = ? where name = ? `, [
-            last_open_time, name
-        ])
-    },
+        Err(err)=>{
+            println!("初始数据写入失败：chrome, {}", err)
+        }
+    }
+    Ok(())
 }

@@ -61,7 +61,11 @@ export default function columns(props = {}) {
             dataIndex: 'tags',
             width: 140,
         },
-        
+        {
+            title: '版本号',
+            dataIndex: 'version',
+            width: 120,
+        },
         
         {
             title: '操作',
