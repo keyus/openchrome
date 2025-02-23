@@ -9,8 +9,9 @@ import db from './db/chrome'
 
 // import Telegram from './pages/telegram'
 // import Setting from './pages/setting'
+// await db.initInsert();
 
-await db.initInsert();
+
 ReactDOM.createRoot(document.getElementById("root")).render(
     <ConfigProvider
         theme={{

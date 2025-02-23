@@ -1,8 +1,10 @@
 
-import { useState, version } from 'react'
+import { use, useState, version } from 'react'
 import { useLoaderData } from 'react-router-dom'
-import { Input, Form, Select, Checkbox, Button, Space, Table, message } from 'antd'
+import { Input, Form, Select, Checkbox, Button, Space, Table, message, Tooltip } from 'antd'
 import { useMount, useUpdateEffect } from 'ahooks'
+import { ReactComponent as Chromeicon } from '../../assets/chrome.svg'
+import { ReactComponent as Tgicon } from '../../assets/telegram.svg'
 import { SearchOutlined, PlayCircleOutlined, CloseCircleOutlined, PoweroffOutlined, ReloadOutlined, } from '@ant-design/icons'
 import { invoke } from '@tauri-apps/api/core';
 import { listen, } from '@tauri-apps/api/event'
@@ -31,8 +33,8 @@ export default function Chrome(props = {}) {
 
     useUpdateEffect(() => {
         if (open) {
-            setData(data=>{
-                return data.filter(it => it.open)
+            setData(data => {
+                return data.filter(it => it.openChrome || it.openTg)
             })
         } else {
             setData(dataOrg)
@@ -56,7 +58,7 @@ export default function Chrome(props = {}) {
             setData((prev) => {
                 return prev.map(it => {
                     if (e.payload.length > 0 && e.payload.includes(it.name)) {
-                        return { ...it, open: false }
+                        return { ...it, openChrome: false }
                     }
                     return it
                 });
@@ -73,9 +75,25 @@ export default function Chrome(props = {}) {
         setPagination(pagination)
     }
 
-    const onOpen = async (items) => {
-        const names = items.map(it => ({ name: it.name, version: it.version }));
-        const res = await invoke('open_chrome', { names });
+    /**
+     * 
+     * @param {Array} items 
+     * @param {boolean} useVersion 
+     */
+    const onOpen = async (items, useVersion = false) => {
+        const options = items.map(it => {
+            if (useVersion) {
+                return { name: it.name, chrome_version: it.chrome_version }
+            } else {
+                return { name: it.name }
+            }
+        });
+
+        console.log('options', options);
+        
+        const arr = items.map(it => it.name)
+        const res = await invoke('open_chrome', { options });
+
 
         const last_open_time = Date.now();
         if (res.success) {
@@ -83,10 +101,11 @@ export default function Chrome(props = {}) {
                 name: it.name,
                 last_open_time,
             })));
+            console.log('open success')
             setData((data) => {
                 return data.map(it => {
-                    if (names.includes(it.name)) {
-                        return { ...it, open: true, last_open_time, }
+                    if (arr.includes(it.name)) {
+                        return { ...it, openChrome: true, last_open_time, }
                     }
                     return it
                 })
@@ -101,7 +120,7 @@ export default function Chrome(props = {}) {
         setData((data) => {
             return data.map(it => {
                 if (names.includes(it.name)) {
-                    return { ...it, open: false }
+                    return { ...it, openChrome: false }
                 }
                 return it
             })
@@ -111,11 +130,51 @@ export default function Chrome(props = {}) {
         invoke('close_all_chrome');
         setData((data) => {
             return data.map(it => {
-                return { ...it, open: false }
+                return { ...it, openChrome: false }
+            })
+        })
+        message.success('已关闭所有chrome窗口')
+    }
+
+    const openTelegram = async (items) => {
+        const names = items.map(it => it.name);
+        const res = await invoke('open_tg', { names });
+        if (res.success) {
+            console.log('open success')
+            setData((data) => {
+                return data.map(it => {
+                    if (names.includes(it.name)) {
+                        return { ...it, openTg: true, }
+                    }
+                    return it
+                })
+            })
+        } else {
+            message.error("打开失败")
+        }
+    }
+    const onCloseTg = async (items) => {
+        const names = items.map(it => it.name);
+        invoke('close_tg', { names })
+        setData((data) => {
+            return data.map(it => {
+                if (names.includes(it.name)) {
+                    return { ...it, openTg: false }
+                }
+                return it
             })
         })
     }
-    const column = columns({ onOpen, onClose });
+    const onCloseAllTg = () => {
+        invoke('close_all_tg');
+        setData((data) => {
+            return data.map(it => {
+                return { ...it, openTg: false }
+            })
+        })
+        message.success('已关闭所有Telegram程序')
+    }
+    const column = columns({ onOpen, onClose, openTelegram, onCloseTg });
     const x = column.reduce((a, b) => { return a + b.width }, 0)
 
     return (
@@ -159,7 +218,7 @@ export default function Chrome(props = {}) {
                     <Space>
                         <Button
                             type='primary'
-                            icon={<PlayCircleOutlined />}
+                            icon={<Chromeicon width={20} height={20} />}
                             size='large'
                             autoInsertSpace={false}
                             onClick={() => {
@@ -168,30 +227,41 @@ export default function Chrome(props = {}) {
                                 setSelectedRows([]);
                             }}
                             disabled={selectedRowKeys.length === 0}
-                        >打开</Button>
+                        >chrome</Button>
                         <Button
-                            icon={<CloseCircleOutlined />}
+                            type='primary'
+                            icon={<Tgicon width={20} height={20} />}
+                            size='large'
+                            autoInsertSpace={false}
                             onClick={() => {
-                                onClose(selectedRows);
+                                openTelegram(selectedRows);
                                 setSelectedRowKeys([]);
                                 setSelectedRows([]);
                             }}
                             disabled={selectedRowKeys.length === 0}
-                            size='large' />
-                        <Button
-                            icon={<PoweroffOutlined />}
-                            size='large'
-                            onClick={onCloseAll}
-                        >
-                            一键关闭
-                        </Button>
+                        >tg</Button>
+
+                        <Tooltip title='关闭所有打开的chrome'>
+                            <Button
+                                icon={<PoweroffOutlined />}
+                                size='large'
+                                onClick={onCloseAll}
+                            >
+                                chrome
+                            </Button>
+                        </Tooltip>
+                        <Tooltip title='关闭所有打开的tg'>
+                            <Button
+                                icon={<PoweroffOutlined />}
+                                size='large'
+                                onClick={onCloseAllTg}
+                            >
+                                tg
+                            </Button>
+                        </Tooltip>
                     </Space>
                 </div>
-                <div>
-                    <Space>
-                        <Button icon={<ReloadOutlined />} disabled size='large' />
-                    </Space>
-                </div>
+
             </div>
             <div className='list-table'>
                 <Table

@@ -1,22 +1,50 @@
-import { MoreOutlined, AlignRightOutlined, EnvironmentOutlined } from '@ant-design/icons'
+import { EnvironmentOutlined, SpotifyOutlined } from '@ant-design/icons'
 import { Space, Button, } from 'antd'
+import { ReactComponent as Chromeicon } from '../../assets/chrome.svg'
+import { ReactComponent as Tgicon } from '../../assets/telegram.svg'
 import dayjs from 'dayjs'
 
 export default function columns(props = {}) {
-    const { onOpen, onClose } = props
+    const { onOpen, onClose, openTelegram, onCloseTg } = props
     return [
         {
             title: '编号/名称',
             dataIndex: 'name',
-            width: 100,
+            width: 120,
             fixed: 'left',
             render(val, record) {
-                if(!val) return '-'
+                if (!val) return '-'
                 const isTag = val.toLowerCase().includes('58e0')
                 return (
                     <span className={isTag ? 'tag-58e0' : ''}>
                         {val}
                     </span>
+                )
+            }
+        },
+        {
+            title: '最近打开',
+            dataIndex: 'last_open_time',
+            width: 120,
+            render(val) {
+                if (!val) return
+                return dayjs(val).format('MM-DD HH:mm')
+            }
+        },
+        {
+            title: '指纹版本',
+            dataIndex: 'chrome_version',
+            width: 140,
+            render(val,record) {
+                return (
+                    <Space>
+                        <span>{val}</span>
+                        <SpotifyOutlined
+                            onClick={()=>{
+                                onOpen([record], true)
+                            }}
+                            style={{ color: '#1677ff', fontSize: 18 }} />
+                    </Space>
                 )
             }
         },
@@ -30,20 +58,7 @@ export default function columns(props = {}) {
                 )
             }
         },
-        {
-            title: '最近打开',
-            dataIndex: 'last_open_time',
-            width: 120,
-            render(val){
-                if(!val) return 
-                return dayjs(val).format('MM-DD HH:mm')
-            }
-        },
-        {
-            title: '分组',
-            dataIndex: 'group',
-            width: 100,
-        },
+
 
         {
             title: 'IP',
@@ -51,48 +66,52 @@ export default function columns(props = {}) {
             width: 140,
             render(val) {
                 return (
-                    <Space><span style={{ color: '#ed8871' }}><EnvironmentOutlined /></span>{val}</Space>
+                    <Space><span style={{ color: '#1677ff' }}><EnvironmentOutlined /></span>{val}</Space>
                 )
             }
         },
-       
         {
-            title: '标签',
-            dataIndex: 'tags',
-            width: 140,
+            title: '分组',
+            dataIndex: 'group',
+            width: 100,
         },
-        {
-            title: '版本号',
-            dataIndex: 'version',
-            width: 120,
-        },
-        
         {
             title: '操作',
-            width: 100,
+            width: 180,
             fixed: 'right',
-            align: 'right',
+            align: 'center',
             render(record) {
-                if (record.open) {
-                    return (
-                        <Button type='primary' ghost danger onClick={() => onClose([record])}>关闭</Button>
-                    )
-                }
                 return (
-                    <Button type='primary'  onClick={() => onOpen([record])}>打开</Button>
+                    <Space>
+                        <Button
+                            type='primary'
+                            danger={record.openChrome}
+                            ghost
+                            icon={<Chromeicon width={20} height={20} />}
+                            onClick={() => {
+                                if (record.openChrome) {
+                                    onClose([record])
+                                } else {
+                                    onOpen([record])
+                                }
+                            }}>
+                            {record.openChrome ? '关闭' : '打开'}
+                        </Button>
+                        <Button
+                            type='primary'
+                            ghost
+                            danger={record.openTg}
+                            icon={<Tgicon width={20} height={20} />}
+                            onClick={() => {
+                                if (record.openTg) {
+                                    onCloseTg([record])
+                                } else {
+                                    openTelegram([record])
+                                }
+                            }} />
+                    </Space>
                 )
             }
         },
-        // {
-        //     title: <AlignRightOutlined />,
-        //     width: 100,
-        //     fixed: 'right',
-        //     align: 'center',
-        //     render() {
-        //         return (
-        //             <Button icon={<MoreOutlined />} />
-        //         )
-        //     }
-        // },
     ]
 }

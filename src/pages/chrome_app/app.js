@@ -5,6 +5,9 @@ import bitgetIcon from '../../assets/app/bitget.jpg'
 import mangoIcon from '../../assets/app/mango.png'
 import initiaIcon from '../../assets/app/initia.png'
 import phantomIcon from '../../assets/app/phantom.png'
+import protonIcon from '../../assets/app/proton.png'
+import nordvpnIcon from '../../assets/app/nordvpn.png'
+import surfsharkIcon from '../../assets/app/surfshark.png'
 
 export default [
     {
@@ -55,5 +58,26 @@ export default [
         icons: phantomIcon,
         description: 'Phantom is a wallet for the Solana blockchain',
         url: 'https://chromewebstore.google.com/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa'
+    },
+    {
+        id: 'jplgfhpmjnbigmhklmmbgecoobifkmpa',
+        name: 'Proton VPN',
+        icons: protonIcon,
+        description: 'Proton VPN: Fast & Secure',
+        url: 'https://chromewebstore.google.com/detail/proton-vpn-fast-secure/jplgfhpmjnbigmhklmmbgecoobifkmpa'
+    },
+    {
+        id: 'fjoaledfpmneenckfbpdfhkmimnjocfa',
+        name: 'NordVPN',
+        icons: nordvpnIcon,
+        description: 'VPN proxy for privacy and security',
+        url: 'https://chromewebstore.google.com/detail/nordvpn-vpn-proxy-for-pri/fjoaledfpmneenckfbpdfhkmimnjocfa'
+    },
+    {
+        id: 'ailoabdmgclmfmhdagmlohpjlbpffblp',
+        name: 'Surfshark VPN',
+        icons: surfsharkIcon,
+        description: 'Browse the web freely with secure',
+        url: 'https://chromewebstore.google.com/detail/surfshark-vpn-extension/ailoabdmgclmfmhdagmlohpjlbpffblp'
     }
 ]

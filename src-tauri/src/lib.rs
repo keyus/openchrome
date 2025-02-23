@@ -13,7 +13,9 @@ pub fn run() {
             open::open_chrome, 
             open::close_chrome,
             open::close_all_chrome,
-            
+            open::open_tg,
+            open::close_tg,
+            open::close_all_tg,
             chrome_app::install_chrome_extension,
             chrome_app::uninstall_chrome_extension,
         ])
