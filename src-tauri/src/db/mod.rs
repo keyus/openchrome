@@ -1,15 +1,15 @@
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, Result};
 use tauri::Manager;
 
 pub fn init_db(app_handle: tauri::AppHandle) {
-    println!("Creating db");
-
     let path_resolver = app_handle.path();
     let data_path = path_resolver.app_data_dir().unwrap().join("chrome.db");
 
     print!("data_path: {:?} \n", data_path);
     match Connection::open(data_path) {
         Ok(connection) => {
+            println!("连接数据库成功!");
+            table_exists(&connection, "chrome");
             create_table(&connection);
         }
         Err(err) => {
@@ -18,40 +18,59 @@ pub fn init_db(app_handle: tauri::AppHandle) {
     }
 }
 
-//创建chrome表
-fn create_table(conn: &Connection)  {
-    match conn.execute(&CREATE_CHROME_SQL, params![]) {
-        Ok(rows) => {
-            println!("chrome表创建成功! , {}", rows);
-            match conn.execute(&INSERT_CHROME_SQL, params![]) {
-                Ok(rows) => {
-                    println!("初始数据：chrome 写入成功, {}", rows)
-                }
-                Err(err) => {
-                    println!("初始数据写入失败：chrome, {}", err)
-                }
-            }
-        }
-        Err(_) => {
-            //已存在chrome
-        }
-    }
-    match conn.execute(&CREATE_VERSION_SQL, params![]) {
-        Ok(rows) => {
-            println!("chrome_version表创建成功! , {}", rows);
-            match conn.execute(&INSERT_VERSION_SQL, params![]) {
-                Ok(rows) => {
-                    println!("version表初始化成功! , {}", rows);
-                }
-                Err(_) => {
-                    println!("chrome_version 已存在!");
+fn create_table(conn: &Connection) {
+    //创建chrome表
+    if !table_exists(&conn, "chrome") {
+        match conn.execute(&CREATE_CHROME_SQL, params![]) {
+            Ok(rows) => {
+                println!("chrome表创建成功! , {}", rows);
+                match conn.execute(&INSERT_CHROME_SQL, params![]) {
+                    Ok(rows) => {
+                        println!("chrome表初始化成功, {}", rows)
+                    }
+                    Err(err) => {
+                        println!("chrome初始化失败! {}", err)
+                    }
                 }
             }
-        }
-        Err(_) => {
-            //已存在version
+            Err(_) => {
+                //已存在chrome
+                println!("chrome表，已存在!");
+            }
         }
     }
+
+    if !table_exists(&conn, "version") {
+        //创建version表
+        match conn.execute(&CREATE_VERSION_SQL, params![]) {
+            Ok(rows) => {
+                println!("version表创建成功! , {}", rows);
+                match conn.execute(&INSERT_VERSION_SQL, params![]) {
+                    Ok(rows) => {
+                        println!("version表初始化成功! , {}", rows);
+                    }
+                    Err(_) => {
+                        println!("version 已存在!");
+                    }
+                }
+            }
+            Err(_) => {
+                //已存在version
+                println!("version表，已存在!");
+            }
+        }
+    }
+}
+
+fn table_exists(conn: &Connection, table_name: &str) -> bool {
+    let sql = "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name=?)";
+    let row = conn.query_row(&sql, [table_name], |row| row.get::<_, u32>(0));
+
+    let result = match row {
+        Ok(row) => row > 0,
+        Err(_) => false,
+    };
+    result
 }
 
 const CREATE_VERSION_SQL: &str = "
@@ -77,8 +96,8 @@ const CREATE_CHROME_SQL: &str = "
         )
     ";
 
-const INSERT_VERSION_SQL: &str = "INSERT INTO chrome_version (version) VALUES ('1')";
-    
+const INSERT_VERSION_SQL: &str = "INSERT INTO version (version) VALUES ('1')";
+
 const INSERT_CHROME_SQL: &str = "
         INSERT INTO chrome (name, group_name, localtion, tags, mark,chrome_version) VALUES
             ('eth-C871', '', '', '', '','113.0.5672'),

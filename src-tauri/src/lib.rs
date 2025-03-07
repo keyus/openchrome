@@ -1,7 +1,8 @@
 use std::thread;
 mod open;
 mod chrome_app;
-mod db;
+// mod db;
+mod db_keshun;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,7 +22,7 @@ pub fn run() {
         ])
         .setup(|app|{
             
-            db::init_db(app.handle().clone());
+            db_keshun::init_db(app.handle().clone());
             
             // 启动监听线程
             let app_handle = app.handle().clone();
